@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#2563eb">
+    <meta name="description" content="Control de presupuestos y nóminas">
+
+    <title>Control de Presupuesto y Nómina</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+
+<header class="app-header">
+    <div>
+        <h1>Control de Presupuesto</h1>
+        <p>Presupuesto, nómina y pagos recurrentes</p>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- =========================
+         CONFIGURACIÓN
+    ========================== -->
+    <section class="card">
+        <div class="section-title">
+            <div>
+                <h2>Presupuesto</h2>
+                <p>Define el presupuesto disponible para el periodo.</p>
+            </div>
+        </div>
+
+        <form id="budgetForm" class="form-grid budget-form">
+
+            <div class="form-group">
+                <label for="initialBudget">
+                    Presupuesto Inicial
+                </label>
+
+                <input
+                    type="number"
+                    id="initialBudget"
+                    min="0"
+                    step="0.01"
+                    placeholder="Ej. 100000"
+                    required
+                >
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    Guardar Presupuesto
+                </button>
+            </div>
+
+        </form>
+    </section>
+
+
+    <!-- =========================
+         INDICADORES
+    ========================== -->
+    <section class="dashboard-grid">
+
+        <article id="budgetIndicator" class="budget-indicator normal">
+
+            <div class="indicator-icon">
+                $
+            </div>
+
+            <div>
+                <span class="indicator-label">
+                    Presupuesto Restante
+                </span>
+
+                <strong id="remainingBudget">
+                    $0.00
+                </strong>
+
+                <small id="budgetPercentage">
+                    0% disponible
+                </small>
+            </div>
+
+        </article>
+
+
+        <article class="stat-card">
+            <span>Presupuesto inicial</span>
+            <strong id="totalBudget">
+                $0.00
+            </strong>
+        </article>
+
+
+        <article class="stat-card">
+            <span>Total gastado</span>
+            <strong id="totalSpent">
+                $0.00
+            </strong>
+        </article>
+
+
+        <article class="stat-card">
+            <span>Pagos registrados</span>
+            <strong id="paymentCount">
+                0
+            </strong>
+        </article>
+
+    </section>
+
+
+    <!-- =========================
+         REGISTRAR PAGO
+    ========================== -->
+    <section class="card">
+
+        <div class="section-title">
+            <div>
+                <h2>Registrar pago</h2>
+                <p>Agrega un nuevo pago al historial.</p>
+            </div>
+        </div>
+
+        <form id="paymentForm">
+
+            <input type="hidden" id="editingPaymentId">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="employeeName">
+                        Nombre del empleado
+                    </label>
+
+                    <input
+                        type="text"
+                        id="employeeName"
+                        placeholder="Nombre completo"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="paymentConcept">
+                        Concepto de pago
+                    </label>
+
+                    <select id="paymentConcept" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="Sueldo Base">Sueldo Base</option>
+                        <option value="Bono">Bono</option>
+                        <option value="Horas Extra">Horas Extra</option>
+                        <option value="Aguinaldo">Aguinaldo</option>
+                        <option value="Liquidación">Liquidación</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="paymentDate">
+                        Fecha del pago
+                    </label>
+
+                    <input
+                        type="date"
+                        id="paymentDate"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="paymentAmount">
+                        Monto
+                    </label>
+
+                    <input
+                        type="number"
+                        id="paymentAmount"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="$0.00"
+                        required
+                    >
+                </div>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    id="paymentSubmit"
+                    class="btn btn-primary"
+                >
+                    Registrar Pago
+                </button>
+
+                <button
+                    type="button"
+                    id="cancelEdit"
+                    class="btn btn-secondary hidden"
+                >
+                    Cancelar Edición
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+
+    <!-- =========================
+         PAGOS RECURRENTES
+    ========================== -->
+    <section class="card">
+
+        <div class="section-title">
+            <div>
+                <h2>Pagos Automáticos Recurrentes</h2>
+                <p>
+                    Programa pagos que se generarán automáticamente.
+                </p>
+            </div>
+        </div>
+
+
+        <form id="recurringForm">
+
+            <input type="hidden" id="editingRecurringId">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="recurringName">
+                        Nombre
+                    </label>
+
+                    <input
+                        type="text"
+                        id="recurringName"
+                        placeholder="Nombre del empleado"
+                        required
+                    >
+                </div>
+
+
+                <div class="form-group">
+                    <label for="recurringConcept">
+                        Concepto
+                    </label>
+
+                    <select id="recurringConcept" required>
+                        <option value="">Seleccionar...</option>
+                        <option value="Sueldo Base">Sueldo Base</option>
+                        <option value="Bono">Bono</option>
+                        <option value="Horas Extra">Horas Extra</option>
+                        <option value="Aguinaldo">Aguinaldo</option>
+                        <option value="Liquidación">Liquidación</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="recurringFrequency">
+                        Frecuencia
+                    </label>
+
+                    <select id="recurringFrequency" required>
+                        <option value="daily">Diario</option>
+                        <option value="weekly">Semanal</option>
+                        <option value="biweekly">Quincenal</option>
+                        <option value="monthly">Mensual</option>
+                    </select>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="recurringAmount">
+                        Monto
+                    </label>
+
+                    <input
+                        type="number"
+                        id="recurringAmount"
+                        min="0.01"
+                        step="0.01"
+                        placeholder="$0.00"
+                        required
+                    >
+                </div>
+
+            </div>
+
+
+            <div class="form-actions">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    id="recurringSubmit"
+                >
+                    Programar Pago
+                </button>
+
+            </div>
+
+        </form>
+
+
+        <div class="recurring-list-wrapper">
+
+            <h3>Automatizaciones activas</h3>
+
+            <div id="recurringList" class="recurring-list">
+                <!-- JS -->
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         ANALÍTICA
+    ========================== -->
+    <section class="card analytics-card">
+
+        <div class="section-title">
+            <div>
+                <h2>Distribución de gastos</h2>
+                <p>Desglose por concepto de pago.</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="expensesChart"></canvas>
+        </div>
+
+        <div id="chartEmpty" class="empty-message">
+            No hay gastos registrados para mostrar.
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         HISTORIAL
+    ========================== -->
+    <section class="card">
+
+        <div class="section-title history-header">
+
+            <div>
+                <h2>Historial de pagos</h2>
+                <p>Consulta, modifica o elimina registros.</p>
+            </div>
+
+            <div class="toolbar">
+
+                <input
+                    type="search"
+                    id="searchPayments"
+                    placeholder="Buscar empleado o concepto..."
+                >
+
+                <button
+                    type="button"
+                    id="exportExcel"
+                    class="btn btn-success"
+                >
+                    Exportar a Excel
+                </button>
+
+                <button
+                    type="button"
+                    id="resetAll"
+                    class="btn btn-danger"
+                >
+                    Reiniciar Todo
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Empleado</th>
+                        <th>Concepto</th>
+                        <th>Fecha</th>
+                        <th>Monto</th>
+                        <th>Origen</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody id="paymentsTableBody">
+                    <!-- JS -->
+                </tbody>
+
+            </table>
+
+        </div>
+
+        <div
+            id="emptyHistory"
+            class="empty-message"
+        >
+            No hay pagos registrados.
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+    <p>
+        Control de Presupuesto y Nómina
+    </p>
+</footer>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>
